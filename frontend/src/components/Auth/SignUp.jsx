@@ -1,8 +1,11 @@
-// client/src/components/Auth/SignUp.jsx
+// src/components/Auth/SignUp.jsx
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
 
 export function SignUp() {
+  const { signup } = useAuth();
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     username: '',
     email: '',
@@ -10,6 +13,7 @@ export function SignUp() {
     confirmPassword: '',
     agreeTerms: false,
   });
+  const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -20,17 +24,9 @@ export function SignUp() {
       ...prev,
       [name]: type === 'checkbox' ? checked : value,
     }));
+    setError('');
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    setIsLoading(true);
-    // Logic will be added later
-    console.log('SignUp form submitted:', formData);
-    setTimeout(() => setIsLoading(false), 1000);
-  };
-
-  // Password strength checker
   const getPasswordStrength = (password) => {
     let strength = 0;
     if (password.length >= 8) strength++;
@@ -53,10 +49,34 @@ export function SignUp() {
 
   const passwordStrength = getPasswordStrength(formData.password);
 
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setError('');
+
+    try {
+      if (formData.password !== formData.confirmPassword) {
+        setError('Passwords do not match');
+        setIsLoading(false);
+        return;
+      }
+      if (!formData.agreeTerms) {
+        setError('You must agree to the Terms of Service');
+        setIsLoading(false);
+        return;
+      }
+      signup(formData.email, formData.password, formData.username);
+      navigate('/');
+    } catch (err) {
+      setError(err.message || 'Sign up failed. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#0a0a0a] px-4 py-8">
       <div className="w-full max-w-md bg-[#1a1a1a] rounded-2xl p-8 shadow-2xl animate-fadeIn">
-        {/* Header */}
         <div className="text-center mb-8">
           <div className="text-4xl mb-2">✏️</div>
           <h1 className="text-3xl font-bold text-white">
@@ -65,9 +85,13 @@ export function SignUp() {
           <p className="text-gray-400 mt-1">Create your account to start collaborating</p>
         </div>
 
-        {/* Form */}
+        {error && (
+          <div className="mb-4 p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
+            {error}
+          </div>
+        )}
+
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Username */}
           <div>
             <label htmlFor="username" className="block text-sm font-medium text-gray-300 mb-1.5">
               Username <span className="text-red-500">*</span>
@@ -89,7 +113,6 @@ export function SignUp() {
             <p className="text-xs text-gray-500 mt-1">3-20 characters, letters and numbers only</p>
           </div>
 
-          {/* Email */}
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-1.5">
               Email <span className="text-red-500">*</span>
@@ -107,7 +130,6 @@ export function SignUp() {
             />
           </div>
 
-          {/* Password */}
           <div>
             <label htmlFor="password" className="block text-sm font-medium text-gray-300 mb-1.5">
               Password <span className="text-red-500">*</span>
@@ -133,8 +155,6 @@ export function SignUp() {
                 {showPassword ? '👁️‍🗨️' : '👁️'}
               </button>
             </div>
-            
-            {/* Password strength indicator */}
             {formData.password && (
               <div className="mt-2">
                 <div className="h-1 rounded-full bg-[#333] overflow-hidden">
@@ -153,7 +173,6 @@ export function SignUp() {
             )}
           </div>
 
-          {/* Confirm Password */}
           <div>
             <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-300 mb-1.5">
               Confirm Password <span className="text-red-500">*</span>
@@ -183,7 +202,6 @@ export function SignUp() {
             )}
           </div>
 
-          {/* Terms */}
           <div className="flex items-start gap-2 pt-1">
             <input
               type="checkbox"
@@ -207,7 +225,6 @@ export function SignUp() {
             </label>
           </div>
 
-          {/* Submit Button */}
           <button
             type="submit"
             disabled={isLoading}
@@ -217,7 +234,6 @@ export function SignUp() {
           </button>
         </form>
 
-        {/* Footer */}
         <div className="mt-6 text-center text-gray-400">
           Already have an account?{' '}
           <Link to="/login" className="text-yellow-400 hover:text-yellow-300 font-medium transition-colors">
@@ -225,7 +241,6 @@ export function SignUp() {
           </Link>
         </div>
 
-        {/* Divider */}
         <div className="relative my-6">
           <div className="absolute inset-0 flex items-center">
             <div className="w-full border-t border-[#333]"></div>
@@ -235,7 +250,6 @@ export function SignUp() {
           </div>
         </div>
 
-        {/* Social Signup */}
         <div className="flex gap-3">
           <button className="flex-1 py-2.5 rounded-lg border-2 border-[#333] text-gray-300 hover:bg-[#2a2a2a] hover:border-yellow-400 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
             🐙 GitHub

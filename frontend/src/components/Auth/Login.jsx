@@ -1,13 +1,17 @@
-// client/src/components/Auth/Login.jsx
+// src/components/Auth/Login.jsx
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
 
 export function Login() {
+  const { login } = useAuth();
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     email: '',
     password: '',
     rememberMe: false,
   });
+  const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -17,20 +21,32 @@ export function Login() {
       ...prev,
       [name]: type === 'checkbox' ? checked : value,
     }));
+    setError('');
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-    // Logic will be added later
-    console.log('Login form submitted:', formData);
-    setTimeout(() => setIsLoading(false), 1000);
+    setError('');
+
+    try {
+      if (!formData.email || !formData.password) {
+        setError('Please fill in all fields');
+        setIsLoading(false);
+        return;
+      }
+      login(formData.email, formData.password);
+      navigate('/');
+    } catch (err) {
+      setError(err.message || 'Login failed. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#0a0a0a] px-4">
       <div className="w-full max-w-md bg-[#1a1a1a] rounded-2xl p-8 shadow-2xl animate-fadeIn">
-        {/* Header */}
         <div className="text-center mb-8">
           <div className="text-4xl mb-2">✏️</div>
           <h1 className="text-3xl font-bold text-white">
@@ -39,9 +55,13 @@ export function Login() {
           <p className="text-gray-400 mt-1">Login to continue collaborating</p>
         </div>
 
-        {/* Form */}
+        {error && (
+          <div className="mb-4 p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
+            {error}
+          </div>
+        )}
+
         <form onSubmit={handleSubmit} className="space-y-5">
-          {/* Email */}
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-1.5">
               Email <span className="text-red-500">*</span>
@@ -60,7 +80,6 @@ export function Login() {
             />
           </div>
 
-          {/* Password */}
           <div>
             <label htmlFor="password" className="block text-sm font-medium text-gray-300 mb-1.5">
               Password <span className="text-red-500">*</span>
@@ -87,7 +106,6 @@ export function Login() {
             </div>
           </div>
 
-          {/* Options */}
           <div className="flex items-center justify-between text-sm">
             <label className="flex items-center gap-2 text-gray-400 cursor-pointer">
               <input
@@ -105,7 +123,6 @@ export function Login() {
             </a>
           </div>
 
-          {/* Submit Button */}
           <button
             type="submit"
             disabled={isLoading}
@@ -115,7 +132,6 @@ export function Login() {
           </button>
         </form>
 
-        {/* Footer */}
         <div className="mt-6 text-center text-gray-400">
           Don't have an account?{' '}
           <Link to="/signup" className="text-yellow-400 hover:text-yellow-300 font-medium transition-colors">
@@ -123,7 +139,6 @@ export function Login() {
           </Link>
         </div>
 
-        {/* Divider */}
         <div className="relative my-6">
           <div className="absolute inset-0 flex items-center">
             <div className="w-full border-t border-[#333]"></div>
@@ -133,7 +148,6 @@ export function Login() {
           </div>
         </div>
 
-        {/* Social Login */}
         <div className="flex gap-3">
           <button className="flex-1 py-2.5 rounded-lg border-2 border-[#333] text-gray-300 hover:bg-[#2a2a2a] hover:border-yellow-400 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
             🐙 GitHub
