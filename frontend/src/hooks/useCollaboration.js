@@ -3,7 +3,8 @@ import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import * as Y from 'yjs';
 import { SocketIOProvider } from 'y-socket.io';
 
-const SERVER_URL = "http://localhost:3000";
+// Use empty string for same domain (since frontend is served from backend)
+const SERVER_URL = "";
 
 export function useCollaboration(username) {
   const [users, setUsers] = useState([]);
