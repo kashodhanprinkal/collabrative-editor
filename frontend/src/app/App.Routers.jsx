@@ -2,7 +2,7 @@
 import { Routes, Route } from 'react-router-dom';
 import { Login } from '../components/Auth/Login';
 import { SignUp } from '../components/Auth/SignUp';
-import Editor from '../components/Editor/main';
+import Editor from '../components/Editor/Main';
 
 function AppRoutes() {
   return (
