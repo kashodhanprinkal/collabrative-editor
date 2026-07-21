@@ -1,0 +1,12 @@
+services:
+  collaborative-editor:
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    container_name: collaborative-editor-container
+
+    ports:
+      - "4000:3000"
+
+    restart: unless-stopped
